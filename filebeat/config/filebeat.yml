@@ -1,0 +1,33 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /app/logs/*.json
+    combine_partial: true
+    json.keys_under_root: true
+    json.add_error_key: true
+    json.overwrite_keys: true
+    json.ignore_decoding_error: true
+    fields_under_root: true
+    fields:
+        tags: ['json']
+    processors:
+      - decode_json_fields:
+          fields: ["message"]
+
+output:
+  logstash:
+    enable: true
+    hosts:  
+      - logstash:5044
+
+logging.to_files: true
+logging.to_syslog: false
+
+# X-pack optional module
+xpack.monitoring.enabled: true
+xpack.monitoring.elasticsearch.hosts: ["http://elasticsearch:9200"]
+xpack.monitoring.elasticsearch.username: elastic
+xpack.monitoring.elasticsearch.password: changeme
+
+
