@@ -88,8 +88,8 @@ services:
         args:
           ELK_VERSION: $ELK_VERSION
     environment:
-      - "STORAGE_TYPE=elasticsearch"
-      - "ES_HOSTS=elasticsearch:9200"
+      - STORAGE_TYPE=elasticsearch
+      - ES_HOSTS=http://elasticsearch:9200
     ports:
       - "9411:9411"
     networks:

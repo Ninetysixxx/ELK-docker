@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<property name="log_directory" value="./logs" />
+	<springProperty scope="context" name="springAppName" source="spring.application.name"/>
+	<property name="log_file" value="${springAppName}"/>​
+	<property name="LOG_PATTERN" value="%date{yyyy-MM-dd}|%d{HH:mm:ss.SSS}|%level|[%thread]|%logger{36}|%line|%msg%n" />
+
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- Log message format -->
+		<encoder>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${log_directory}/${log_file}.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<!-- daily rollover -->
+			<fileNamePattern>${log_directory}/${log_file}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+			<maxHistory>10</maxHistory>
+			<MaxFileSize>10MB</MaxFileSize>
+		</rollingPolicy>
+
+		<encoder>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Setting log error -->
+	<appender name="error_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${log_directory}/${log_file}-error.log</file>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>
+		</filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<!-- daily rollover -->
+			<fileNamePattern>${log_directory}/${log_file}-error.%d{yyyy-MM-dd}.%i.gz
+			</fileNamePattern>
+			<maxHistory>30</maxHistory>
+			<MaxFileSize>10MB</MaxFileSize>
+		</rollingPolicy>
+
+		<encoder>
+			<pattern>${LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="stash" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${log_directory}/${log_file}.json</file>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+			<level>DEBUG</level>
+			<level>ERROR</level>
+			<level>TRACE</level>
+		</filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log_directory}/${log_file}.json.%d{yyyy-MM-dd}.gz</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+
+		<encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+			<providers>
+				<pattern>
+					<pattern>
+						{
+						"timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+						"severity": "%level",
+						"service": "${springAppName:-}",
+						"trace": "%X{X-B3-TraceId:-}",
+						"span": "%X{X-B3-SpanId:-}",
+						"parent": "%X{X-B3-ParentSpanId:-}",
+						"exportable": "%X{X-Span-Export:-}",
+						"pid": "${PID:-}",
+						"thread": "%thread",
+						"class": "%logger{40}",
+						"message": "%message"
+						}
+					</pattern>
+				</pattern>
+			</providers>
+		</encoder>
+	</appender>
+
+	<logger name="com.energisme" level="debug" additivity="false">
+		<appender-ref ref="console" />
+		<appender-ref ref="file" />
+		<appender-ref ref="error_log" />
+		<appender-ref ref="stash"/>
+	</logger>
+
+	<!-- Setting the root level of logging -->
+	<root level="info">
+		<appender-ref ref="console" />
+		<appender-ref ref="file" />
+		<appender-ref ref="error_log" />
+		<appender-ref ref="stash"/>
+	</root>
+
+</configuration>
