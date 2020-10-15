@@ -82,22 +82,6 @@ services:
         - kibana
         - logstash
 
-  zipkin:
-    build:
-        context: zipkin/
-        args:
-          ELK_VERSION: $ELK_VERSION
-    environment:
-      - STORAGE_TYPE=elasticsearch
-      - ES_HOSTS=http://elasticsearch:9200
-    ports:
-      - "9411:9411"
-    networks:
-      - elk
-    depends_on:
-      # - dependencies_zipkin
-      - elasticsearch
-
 networks:
   elk:
     driver: bridge
